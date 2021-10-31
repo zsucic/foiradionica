@@ -67,6 +67,41 @@ function myFunction5() {
   for (var i = 1; i < tabela.length; i++) // we start from 1 rather than 0, to skip the header...
   {
     var ime = tabela[i][1];
+    if(i%1000===0)
+      console.log("obrađeno: "+i);
+    //console.log("br: "+rednibroj + " ime: "+ime);
+    for (var j=0; j<kontakti.length; j++)
+    {
+      var osoba=kontakti[j];
+      var imeOsobe=osoba.getFullName();
+      if(imeOsobe.localeCompare(ime, 'en', { sensitivity: 'base' })===0)
+      {
+        console.log("Pronađena osoba:" + imeOsobe);
+        var range = activeSheet.getRange(i+1, 1,1,15); // +1 because sheets start counting from row=1
+        range.setBackground("red");
+      }
+    }
+  }
+}
+
+function myFunction6() {
+  console.log("Analiza kontakata");
+  var currentSpreadsheet=SpreadsheetApp.getActiveSpreadsheet();
+  var activeSheet = currentSpreadsheet.getActiveSheet();
+  var tabela = activeSheet.getDataRange().getValues();
+  var kontakti=ContactsApp.getAllContacts();
+  var doc = DocumentApp.create('PoreznaReport');
+  //move the file to the FOI WS folder
+  var folder = DriveApp.getFolderById("12SCkSTDzFRBzU5soD88hzI74vExMt_fJ");
+  var docFile = DriveApp.getFileById( doc.getId() );
+  folder.addFile( docFile );
+  DriveApp.getRootFolder().removeFile(docFile);
+
+  var body= doc.getBody();
+
+  for (var i = 1; i < tabela.length; i++) // we start from 1 rather than 0, to skip the header...
+  {
+    var ime = tabela[i][1];
     if(i%20===0)
       console.log("obrađeno: "+i);
     //console.log("br: "+rednibroj + " ime: "+ime);
@@ -77,13 +112,18 @@ function myFunction5() {
       if(imeOsobe.localeCompare(ime, 'en', { sensitivity: 'base' })===0)
       {
         console.log("Pronađena osoba:" + imeOsobe);
-        var range = activeSheet.getRange(i, 1,1,15);
+        var range = activeSheet.getRange(i+1, 1,1,15); // +1 because sheets start counting from row=1
         range.setBackground("red");
+        body.appendParagraph("------------------------------------------------");
+
+        body.appendParagraph(range.getValues().toLocaleString());
+        body.appendParagraph("found as:" + imeOsobe);
+        body.appendParagraph("------------------------------------------------");
       }
     }
   }
+  doc.saveAndClose();
 }
-
 
 
 
